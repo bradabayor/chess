@@ -1,52 +1,61 @@
-require_relative "token.rb"
+class Token
+	attr_accessor :team, :location
+	@@token_list = []
+
+	def initialize(team,x,y)
+		@team = team
+		@location = [x,y]
+		@previous_locations = nil
+		@@token_list << self
+	end
+end
+
+class Rook < Token
+	attr_accessor :icon
+
+	def initialize(team,x,y)
+		super(team, x,y)
+		@icon = "\u2656"
+	end
+end
+
+class Knight < Token
+	attr_accessor :icon
+
+	def initialize(team,x,y)
+		super(team,x,y)
+		@icon = "\u2658"
+	end
+end
 
 class Board
-  attr_reader :bm
+	def initialize
+		@board_map = Array.new(9)
+	end
 
-  def initialize
-    @bm = Array.new(8){Array.new(8)}
-
-    @bm[0][0] = Token.new("white","\u2656",[0][0])
-    @bm[0][1] = Token.new("white","\u2658",[0][0])
-    @bm[0][2] = Token.new("white","\u2657",[0][0])
-    @bm[0][3] = Token.new("white","\u2654",[0][0])
-    @bm[0][4] = Token.new("white","\u2655",[0][0])
-    @bm[0][5] = Token.new("white","\u2657",[0][0])
-    @bm[0][6] = Token.new("white","\u2658",[0][0])
-    @bm[0][7] = Token.new("white","\u2656",[0][0])
-
-    8.times do |i|
-      @bm[1][i] = Token.new("white","\u2659",[0][0])
-    end
-
+	# Searches for token at a selected square. Prints its icon if one exists, if not prints blank.
+	def render_token(x,y)
+  	token =  Token.class_variable_get(:@@token_list).select {|token| token.location === [x,y]}
+  	token[0] != nil ? (return token[0].icon) : (return " ")
   end
 
-
-  def render_board
+	def render_board
     puts %{
-      A   B   D   C   E   F   G   H 
-    +-------------------------------+
-  1 | #{@bm[0][0].icon} | #{@bm[0][1].icon} | #{@bm[0][2].icon} | #{@bm[0][3].icon} | #{@bm[0][4].icon} | #{@bm[0][5].icon} | #{@bm[0][6].icon} | #{@bm[0][7].icon} |
-    +-------------------------------+
-  2 | #{@bm[1][0].icon} | #{@bm[1][1].icon} | #{@bm[1][2].icon} | #{@bm[1][3].icon} | #{@bm[1][4].icon} | #{@bm[1][5].icon} | #{@bm[1][6].icon} | #{@bm[1][7].icon} |
-    +-------------------------------+
-  3 |   |   |   |   |   |   |   |   |
-    +-------------------------------+
-  4 |   |   |   |   |   |   |   |   |
-    +-------------------------------+
-  5 |   |   |   |   |   |   |   |   |
-    +-------------------------------+
-  6 |   |   |   |   |   |   |   |   |
-    +-------------------------------+
-  7 |   |   |   |   |   |   |   |   |
-    +-------------------------------+
-  8 |   |   |   |   |   |   |   |   |
-    +-------------------------------+
+      A   B   C
+    +-----------+
+  1 | #{render_token(0,0)} | #{render_token(0,1)} | #{render_token(0,2)} |
+    +-----------+
+  2 | #{render_token(1,0)} | #{render_token(1,1)} | #{render_token(1,2)} |
+    +-----------+
+  3 |   |   |   |
+    +-----------+
     }
   end
-
 end
 
 board = Board.new
+
+rook = Rook.new("white",1,0)
+knight = Knight.new("white",0,1)
 
 board.render_board
