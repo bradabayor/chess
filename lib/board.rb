@@ -4,33 +4,37 @@ require_relative "game.rb"
 class Board
   def initialize
     # Add White team tokens
-    Rook.new("W",0,0)
-    Rook.new("W",0,7)
-    Knight.new("W",0,1)
-    Knight.new("W",0,6)
-    Bishop.new("W",0,2)
-    Bishop.new("W",0,5)
-    Queen.new("W",0,3)
-    King.new("W",0,4)
-    8.times { |i| Pawn.new("W",1,i) }
+    Rook.new("W",7,0)
+    Rook.new("W",7,7)
+    Knight.new("W",7,1)
+    Knight.new("W",7,6)
+    Bishop.new("W",7,2)
+    Bishop.new("W",7,5)
+    Queen.new("W",7,3)
+    King.new("W",7,4)
+    8.times { |i| Pawn.new("W",6,i) }
 
     # And Black team tokens
-    Rook.new("B",7,0)
-    Rook.new("B",7,7)
-    Knight.new("B",7,1)
-    Knight.new("B",7,6)
-    Bishop.new("B",7,2)
-    Bishop.new("B",7,5)
-    Queen.new("B",7,3)
-    King.new("B",7,4)
-    8.times { |i| Pawn.new("B",6,i) }
+    Rook.new("B",0,0)
+    Rook.new("B",0,7)
+    Knight.new("B",0,1)
+    Knight.new("B",0,6)
+    Bishop.new("B",0,2)
+    Bishop.new("B",0,5)
+    Queen.new("B",0,3)
+    King.new("B",0,4)
+    8.times { |i| Pawn.new("B",1,i) }
 		
-	end
+  end
+  
+  def plot_selected_token_moves
+
+  end
 
 	# Searches for token at a selected square. Prints its icon if one exists, if not prints blank.
-	def render_token(x,y)
+	def render_token(x,y,selected=nil)
   	token =  Token.class_variable_get(:@@tokens).detect { |token| token.location === [x,y]}
-  	token === nil ? (return " ") : (return token.icon)
+  	token.nil? ? (return " ") : (return token.icon)
   end
 
 	def render_board
