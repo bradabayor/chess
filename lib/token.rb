@@ -1,7 +1,10 @@
+# Parent class for creating Chess peices. 
+# Individual peice child classes inherit from Token, e.g. Rook < Token
 class Token
   attr_accessor :location, :tokens
   attr_reader :team
 
+	# Creates empty array that contains all present game Tokens irrespective of status.
   @@tokens = []
 
 	def initialize(team,x,y)
@@ -13,7 +16,6 @@ class Token
     @@tokens << self
 	end
 
-	# Reconcile Token Possible Move Offsets with the Current Token Location
 	def find_possible_moves
 		combined_axes = []
 		final_positions = []
@@ -61,8 +63,8 @@ class Rook < Token
 
 	#Add Rook-Specific Possible Move Parameters -> Horiz||Vert Unrestrained to Board Edge
 	def check_rook_move(location)
-		location[0] === @location[0] && (location[0] >= 0 && location[0] <= 7) ? true : false
-		location[0] === @location[0] && (location[0] >= 0 && location[0] <= 7) ? true : false
+		return false if location == @location
+		return false if (location[0].between?(0,7) == false)
 	end
 end
 

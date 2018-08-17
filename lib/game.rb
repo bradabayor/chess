@@ -5,13 +5,16 @@ class Game
 
   def initialize
     board = Board.new
-    board.render_board
+    board.render
 
     print "Select Token: "
     selection = translate_input(gets.chomp)
 
-    p selected_token =  Token.class_variable_get(:@@tokens).detect { |token| token.location === selection}
-    p selected_token.find_possible_moves
+    selected_token =  Token.class_variable_get(:@@tokens).detect { |token| token.location === selection}
+    selected_token.find_possible_moves
+
+    puts "ST: #{selected_token.class} @ #{selected_token.location}"
+
   end
 
   def translate_input(input)
