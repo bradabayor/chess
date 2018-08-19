@@ -19,6 +19,11 @@ class Game
 
     board.render
 
+    print "Select Move: "
+    selected_move = translate_input(gets.chomp)
+
+    board.move_token(selected_token,selected_move)
+
   end
 
   def translate_input(input)
