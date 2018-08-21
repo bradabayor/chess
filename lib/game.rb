@@ -8,22 +8,21 @@ class Game
     board.render_current_tokens
     board.render
 
-    print "Select Token: "
-    selection = translate_input(gets.chomp)
+      print "Select Token: "
+      selection = translate_input(gets.chomp)
 
-    selected_token =  Token.class_variable_get(:@@tokens).detect { |token| token.location === selection}
+      selected_token =  Token.class_variable_get(:@@tokens).detect { |token| token.location === selection}
 
-    puts "ST: #{selected_token.team} #{selected_token.class} @ #{selected_token.location}"
+      puts "ST: #{selected_token.team} #{selected_token.class} @ #{selected_token.location}"
 
-    board.plot_selected_token_moves(selected_token)
+      board.plot_selected_token_moves(selected_token)
 
-    board.render
+      board.render
 
-    print "Select Move: "
-    selected_move = translate_input(gets.chomp)
+      print "Select Move: "
+      selected_move = translate_input(gets.chomp)
 
-    board.move_token(selected_token,selected_move)
-
+      board.move_token(selected_token,selected_move)
   end
 
   def translate_input(input)
