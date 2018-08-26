@@ -8,36 +8,44 @@ class Token
 	# Creates empty array that contains all present game Tokens irrespective of status.
   @@tokens = []
 
-	def initialize(team,x,y)
+	def initialize(team, x, y)
 		@team = team
 		@location = [x,y]
-		@possible_moves = []
-		@move_offsets = []
+		@final_positions = []
 		@taken = false
     @@tokens << self
 	end
 
-	def find_possible_moves
-		combined_axes = []
-		@final_positions = []
+	# Generates diagonal moves in a goven direction, and adds to instance @final_positions array
+	def generate_linear_moves(offset_y, offset_x, extent=nil)
+		y = self.location[0]
+		x = self.location[1]
 
-		switch_move_direction unless @team == "W"
+		extent_y = 0
+		extent_x = 0
 
-		generate_moves
+		offset_y == 1 ? extent_y = 7 : extent_y = 0
+		offset_x == 1 ? extent_x = 7 : extent_x = 0
 
-		i = 0
-		while i < @move_offsets.size do
-			combined_axes = @move_offsets[i].zip(@location)
-			@final_positions << combined_axes.map { |axes_pair| axes_pair.reduce { |axes_sum,axes| axes_sum + axes} } 
-			i += 1
+		if extent != nil
+			extent_y == 7 ? (extent_y = y + extent) : (extent_y = y - extent)
+			extent_x == 7 ? (extent_x = x + extent) : (extent_x = x - extent)
 		end
-		p @final_positions
+
+		until x == extent_x || y == extent_y do
+				@final_positions << [y + offset_y, x + offset_x]
+				y += offset_y
+				x += offset_x
+		end
+		
+		@final_positions
 	end
 
-	# Switch Offsets Dependent on Token Travel Direction
-	def switch_move_direction
-		@move_offsets.each do |move|
-			move[0] = move[0]*-1
+	def assign_icon(white_icon, black_icon)
+		@icon = if @team == 'W'
+			white_icon
+		else
+			black_icon
 		end
 	end
 end
@@ -45,59 +53,46 @@ end
 class Pawn < Token
 	attr_reader :icon
  
-	def initialize(team,x,y)
+	def initialize(team, x, y)
 		super(team,x,y)
-		team == "W" ? @icon = "\u2659" : @icon = "\u265F"
-		
-		# Add Token-Specific Possible Move Parameters -> Forward 1||Forward 2 if @ Start||Diag if Enemy
-		@move_offsets << [-1,0]
-		@move_offsets << [-2,0] if self.location[0] == 1 || 6
+		assign_icon("\u2659", "\u265F")
+	end
+
+	def generate_moves
+		if self.team == "W"
+			@final_positions << [self.location[0] - 1, self.location[1]]
+			@final_positions << [self.location[0] - 2, self.location[1]] if self.location[0] == 6
+		else
+			@final_positions << [self.location[0] + 1, self.location[1]]
+			@final_positions << [self.location[0] + 2, self.location[1]] if self.location[0] == 1
+		end
+		@final_positions
 	end
 end
 
 class Rook < Token
 	attr_reader :icon
 
-	def initialize(team,x,y)
-		super(team,x,y)
-		@possible_moves = []
-		team == "W" ? @icon = "\u2656" : @icon = "\u265C"
+	def initialize(team, x, y)
+		super(team, x, y)
+		assign_icon("\u2656", "\u265C")
 		end
 
 	#Add Rook-Specific Possible Move Parameters -> Horiz||Vert Unrestrained to Board Edge
 	def generate_moves
-		x = (7 - self.location[1])
-		until x >= 8
-			@final_positions << [self.location[0],x]
-			x += 1
-		end
-
-		x = (0 + self.location[1] - 1)
-		until x <= -1
-			@final_positions << [self.location[0],x]
-			x -= 1
-		end
-
-		y = (7 - self.location[0])
-		until y >= 8
-			@final_positions << [y,self.location[1]]
-			y += 1
-		end
-
-		y = (0 + self.location[0] - 1)
-		until y <= -1
-			@final_positions << [y,self.location[1]]
-			y -= 1
-		end
+		generate_linear_moves(1, 0)
+		generate_linear_moves(-1, 0)
+		generate_linear_moves(0, 1)
+		generate_linear_moves(0, -1)
 	end
 end
 
 class Knight < Token
 	attr_reader :icon
 
-	def initialize(team,x,y)
-		super(team,x,y)
-		team == "W" ? @icon = "\u2658" : @icon = "\u265E"
+	def initialize(team, x, y)
+		super(team, x, y)
+		assign_icon("\u2658", "\u265E")
 	end
 
 	def generate_moves
@@ -109,8 +104,8 @@ class Knight < Token
 		@final_positions << [self.location[0] - 2,self.location[1] + 1]
 		@final_positions << [self.location[0] - 1,self.location[1] - 2]
 		@final_positions << [self.location[0] - 1,self.location[1] + 2]
-		@final_positions.extract do |move|
-			(move[0] >= 0 && 7 >= move[0]) && (move[1] >= 0 && 7 >= move[1]) 
+		@final_positions.keep do |move|
+			move[0] >= 0 || 7 >= move[0] || move[1] >= 0 || 7 >= move[1]
 		end
 	end
 end
@@ -118,26 +113,56 @@ end
 class Bishop < Token
 	attr_reader :icon
 
-	def initialize(team,x,y)
-		super(team,x,y)
-		team == "W" ? @icon = "\u2657" : @icon = "\u265D"
+	def initialize(team, x, y)
+		super(team, x, y)
+		assign_icon("\u2657", "\u265D")
 	end
+
+	def generate_moves
+		generate_linear_moves(1, 1)
+		generate_linear_moves(1, -1)
+		generate_linear_moves(-1, 1)
+		generate_linear_moves(-1, -1)
+	end
+	
 end
 
 class Queen < Token
 	attr_reader :icon
 
-	def initialize(team,x,y)
-		super(team,x,y)
-		team == "W" ? @icon = "\u2655" : @icon = "\u265B"
+	def initialize(team, x, y)
+		super(team, x, y)
+		assign_icon("\u2655", "\u265B")
+	end
+
+	def generate_moves
+		generate_linear_moves(1, 1)
+		generate_linear_moves(1, -1)
+		generate_linear_moves(-1, 1)
+		generate_linear_moves(-1, -1)
+		generate_linear_moves(1, 0)
+		generate_linear_moves(-1, 0)
+		generate_linear_moves(0, 1)
+		generate_linear_moves(0, -1)
 	end
 end
 
 class King < Token
 	attr_reader :icon
 
-	def initialize(team,x,y)
-		super(team,x,y)
-		team == "W" ? @icon = "\u2654" : @icon = "\u265A"
+	def initialize(team, x, y)
+		super(team, x, y)
+		assign_icon("\u2654", "\u265A")
+	end
+
+	def generate_moves
+		generate_linear_moves(1, 1, 1)
+		generate_linear_moves(1, -1, 1)
+		generate_linear_moves(-1, 1, 1)
+		generate_linear_moves(-1, -1, 1)
+		generate_linear_moves(1, 0, 1)
+		generate_linear_moves(-1, 0, 1)
+		generate_linear_moves(0, 1, 1)
+		generate_linear_moves(0, -1, 1)
 	end
 end
