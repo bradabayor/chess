@@ -6,7 +6,7 @@ class Token
   attr_reader :team
 
 	# Creates empty array that contains all present game Tokens irrespective of status.
-  @@tokens = []
+	@@tokens = []
 
 	def initialize(team, x, y)
 		@team = team
@@ -21,11 +21,29 @@ class Token
 		y = self.location[0]
 		x = self.location[1]
 
+		off_board = proc { (y + offset_y || x + offset_x) <= -1 || (y + offset_y || x + offset_x) >= 8 }
+		token_list = proc { Token.class_variable_get(:@@tokens) }
+
 		extent_y = 0
 		extent_x = 0
 
-		offset_y == 1 ? extent_y = 7 : extent_y = 0
-		offset_x == 1 ? extent_x = 7 : extent_x = 0
+		case offset_y
+		when 1
+			extent_y = 7
+		when 0
+			extent_y = nil
+		when -1
+			extent_y = 0
+		end
+
+		case offset_x
+		when 1
+			extent_x = 7
+		when 0
+			extent_x = nil
+		when -1
+			extent_x = 0
+		end
 
 		if extent != nil
 			extent_y == 7 ? (extent_y = y + extent) : (extent_y = y - extent)
@@ -33,11 +51,18 @@ class Token
 		end
 
 		until x == extent_x || y == extent_y do
+			break if token_list.call.any? { |token| (token.location ==  [y + offset_y, x + offset_x]) && (token.team == self.team) }
+
+
+			@final_positions << [y + offset_y, x + offset_x] unless off_board.call
+			y += offset_y
+			x += offset_x
+
+			if token_list.call.any? { |token| (token.location ==  [y + offset_y, x + offset_x]) && (token.team != self.team) }
 				@final_positions << [y + offset_y, x + offset_x]
-				y += offset_y
-				x += offset_x
+				break
+			end
 		end
-		
 		@final_positions
 	end
 
